@@ -23,21 +23,24 @@ public class User {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private UUID userId;
 	
-	@Column(unique = true)
+	@Column(unique = true, nullable = false)
 	private String username;
 	
-	@Column(unique = true)
+	@Column(unique = true, nullable = false)
 	private String email;
 	
 	private Boolean enabled;
 	
+	@Column(nullable = false)
 	private String password;
 	
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	
+	@Column(nullable = false)
 	private LocalDateTime dateUpdate;
 	
+	@Column(nullable = false)
 	private LocalDateTime dateCreate;
 
 }
