@@ -1,4 +1,4 @@
-package br.com.projectblog.respositories;
+package br.com.projectblog.repositories;
 
 import java.util.Optional;
 import java.util.UUID;
