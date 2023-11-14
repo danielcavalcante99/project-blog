@@ -16,7 +16,7 @@ import br.com.projectblog.exceptions.BusinessException;
 import br.com.projectblog.exceptions.ResourceNotFoundException;
 import br.com.projectblog.mappers.UserMapper;
 import br.com.projectblog.models.User;
-import br.com.projectblog.respositories.UserRepository;
+import br.com.projectblog.repositories.UserRepository;
 import br.com.projectblog.utils.UserUtils;
 import br.com.projectblog.validations.groups.OnCreate;
 import br.com.projectblog.validations.groups.OnUpdate;
