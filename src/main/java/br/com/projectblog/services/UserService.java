@@ -34,6 +34,15 @@ public class UserService {
 	private final UserRepository repository;
 
 	private final UserMapper mapper;
+	
+	public Optional<User> findByIdUser(@NotNull UUID id) {
+		User user = this.repository.findById(id).orElse(null);
+		
+		if(!UserUtils.getUsernameLogado().equals(user.getUsername()) && !user.getRole().equals(Role.ADMIN))
+			throw new BusinessException("Não é possível consultar outro usuário que não seja o seu, a menos que seja o administrador.");
+		
+		return Optional.ofNullable(user);
+	}
 
 	
 	public Optional<UserDTO> findById(@NotNull UUID id) {
