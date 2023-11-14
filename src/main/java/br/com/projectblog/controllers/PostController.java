@@ -51,14 +51,16 @@ public class PostController {
 	private final PostService service;
 	
 	@GetMapping
-    @Operation(summary = "Listar posts", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Listar posts", 
+			   description = "Consultar posts com ou sem filtros",
+    		   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", 
 		content = @Content(schema = @Schema(defaultValue = "")))
 	public ResponseEntity<Page<PostDTO>> findAllByFilter(
-			@RequestParam(name = "Post ID", required = false) UUID postId, 
-			@RequestParam(name = "User ID", required = false) UUID userId,
+			@RequestParam(name = "Post ID", required = false) String postId, 
+			@RequestParam(name = "User ID", required = false) String userId,
 			@RequestParam(name = "Title", required = false) String title, 
 			@RequestParam(name = "Description", required = false) String description,
 			@RequestParam(name = "Date Update Start", required = false) @Parameter(example = "2023-08-29T12:02:41") LocalDateTime dateUpdateStart,
@@ -83,7 +85,7 @@ public class PostController {
 		
 		List<PostDTO> listPostDTO = new ArrayList<>();
 		this.service.findAllByFilter(filter, pageable).forEach(postDTO -> {
-			postDTO.add(linkTo(methodOn(PostController.class).findById(postDTO.getPostId())).withSelfRel());
+			postDTO.add(linkTo(methodOn(PostController.class).findById(postDTO.getPostId().toString())).withSelfRel());
 			listPostDTO.add(postDTO);
 		});
 		
@@ -92,13 +94,15 @@ public class PostController {
 	
 	
 	@GetMapping("/{id}")
-    @Operation(summary = "Consultar post pelo id", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Consultar post pelo id", 
+    		   description = "Consultar post pelo id",
+               security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso",
 			content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", 
 		content = @Content(schema = @Schema(defaultValue = "")))
-	public ResponseEntity<PostDTO> findById(@PathVariable UUID id) {
-		PostDTO postDTO = this.service.findById(id).orElse(null);
+	public ResponseEntity<PostDTO> findById(@PathVariable String id) {
+		PostDTO postDTO = this.service.findById(UUID.fromString(id)).orElse(null);
 
 		postDTO.add(linkTo(methodOn(PostController.class)
 				.findAllByFilter(null, null, null, null, null, null, null, null, null, null))
@@ -110,7 +114,9 @@ public class PostController {
 	}
 	
 	@PostMapping("/register")
-    @Operation(summary = "Cadastro de post", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Cadastro de post", 
+    		   description = "Permite o usuário criar seu post apenas",
+               security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Cadastro realizado com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "404", description = "Recurso não encontrado", 
@@ -123,7 +129,9 @@ public class PostController {
 	}
 	
 	@PutMapping("/update")
-    @Operation(summary = "Atualização de post", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Atualização de post", 
+    		  description = "Permite o usuário atualizar seu post apenas",
+              security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Atualização realizado com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "404", description = "Recurso não encontrado", 
@@ -139,15 +147,18 @@ public class PostController {
 	}
 	
 	@DeleteMapping("/{id}")
-    @Operation(summary = "Excluir post pelo id", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Excluir post pelo id", 
+    		   description = "Permite somente o usuário realizar exclusão do seu post pelo id, somente usuários "
+    		   		+ "com nível de ADM poderão excluir post de outros usuários.",
+               security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "204", description = "Exclusão realizado com sucesso")
 	@ApiResponse(responseCode = "404", description = "Recurso não encotrado", 
 		content = @Content(schema = @Schema(implementation = ApiRequestException.class), 
 		mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", 
 		content = @Content(schema = @Schema(defaultValue = "")))
-	public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
-		this.service.deleteById(id);
+	public ResponseEntity<Void> deleteById(@PathVariable String id) {
+		this.service.deleteById(UUID.fromString(id));
 		
 		return ResponseEntity.noContent().build();
 	}

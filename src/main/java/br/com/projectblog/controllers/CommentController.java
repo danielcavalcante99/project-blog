@@ -34,7 +34,9 @@ public class CommentController {
 	private final CommentService service;
 	
 	@PostMapping("/register")
-    @Operation(summary = "Incluir comentário no post", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Incluir comentário no post", 
+    		   description = "Permite apenas inserir comentários em post com seu usuário.",
+    		   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Cadastro realizado com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "404", description = "Recurso não encontrado", 
@@ -48,7 +50,9 @@ public class CommentController {
 	
 	
 	@PutMapping("/update")
-    @Operation(summary = "Atualização do comentário no post", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Atualização do comentário no post", 
+    		   description = "Permite apenas o usuário do comentário realizar a alteração.",
+    		   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Atualização realizado com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "404", description = "Recurso não encontrado", 
@@ -64,15 +68,18 @@ public class CommentController {
 	}
 	
 	@DeleteMapping("/{id}")
-    @Operation(summary = "Excluir comentário pelo id", security = @SecurityRequirement(name = "bearerAuth"))
+    @Operation(summary = "Excluir comentário pelo id", 
+ 		   description = "Permite somente o usuário realizar exclusão do seu comentário do post pelo id, somente usuários "
+   		   		+ "com nível de ADM poderão excluir comentários em post de outros usuários.",
+    		   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "204", description = "Exclusão realizado com sucesso")
 	@ApiResponse(responseCode = "404", description = "Recurso não encotrado", 
 		content = @Content(schema = @Schema(implementation = ApiRequestException.class), 
 		mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", 
 		content = @Content(schema = @Schema(defaultValue = "")))
-	public ResponseEntity<Void> deleteById(@PathVariable UUID id) {
-		this.service.deleteById(id);
+	public ResponseEntity<Void> deleteById(@PathVariable String id) {
+		this.service.deleteById(UUID.fromString(id));
 		
 		return ResponseEntity.noContent().build();
 	}

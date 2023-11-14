@@ -30,7 +30,7 @@ public class AuthenticationController {
 	private final AuthenticationManager authManager;
 
 	@PostMapping("/login")
-    @Operation(summary = "Autenticação do usuário")
+    @Operation(summary = "Autenticação do usuário", description = "Autenticação do usuário")
 	@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso",
 		content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", 

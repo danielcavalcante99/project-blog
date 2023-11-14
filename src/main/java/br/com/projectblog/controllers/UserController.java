@@ -36,7 +36,9 @@ public class UserController {
 	private final UserService service;
 
 	@GetMapping("/{id}")
-	@Operation(summary = "Consultar usuário pelo id", security = @SecurityRequirement(name = "bearerAuth"))
+	@Operation(summary = "Consultar usuário pelo id", 
+			   description = "Permite que o usuário comum consulte apenas seus dados, mas somente o usuário com nível de ADM poderá consultar outros usuários.",
+	           security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "200", description = "Busca realizada com sucesso", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", content = @Content(schema = @Schema(defaultValue = "")))
 	public ResponseEntity<UserDTO> findById(@PathVariable UUID id) {
@@ -48,7 +50,8 @@ public class UserController {
 	}
 
 	@PostMapping("/register")
-	@Operation(summary = "Cadastro de usuário")
+	@Operation(summary = "Cadastro de usuário", 
+	           description = "Realizar cadastro de usuários de diferentes perfis, esse endpoint estará aberto para qualquer pessoa acessar para facilitar os testes, mas isso em produção seria um pouco diferente.")
 	@ApiResponse(responseCode = "201", description = "Cadastro realizado com sucesso", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content(schema = @Schema(implementation = ApiRequestException.class), mediaType = MediaType.APPLICATION_JSON_VALUE))
 	public ResponseEntity<UserDTO> insert(@RequestBody UserRequestDTO dto) {
@@ -56,7 +59,9 @@ public class UserController {
 	}
 
 	@PutMapping("/update")
-	@Operation(summary = "Atualização de usuário", security = @SecurityRequirement(name = "bearerAuth"))
+	@Operation(summary = "Atualização de usuário",
+			   description = "Permite que o usuário comum atualize apenas seus dados, mas somente o usuário com nível de ADM poderá atualizar outros usuários.",
+			   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "201", description = "Atualização realizada com sucesso", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "404", description = "Recurso não encotrado", content = @Content(schema = @Schema(implementation = ApiRequestException.class), mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "400", description = "Requisição inválida", content = @Content(schema = @Schema(implementation = ApiRequestException.class), mediaType = MediaType.APPLICATION_JSON_VALUE))
@@ -66,7 +71,9 @@ public class UserController {
 	}
 
 	@DeleteMapping("/{id}")
-	@Operation(summary = "Excluir usuário pelo id", security = @SecurityRequirement(name = "bearerAuth"))
+	@Operation(summary = "Excluir usuário pelo id", 
+			   description = "Permite que o usuário comum exclua apenas seus dados, mas somente o usuário com nível de ADM poderá excluir outros usuários.",
+			   security = @SecurityRequirement(name = "bearerAuth"))
 	@ApiResponse(responseCode = "204", description = "Exclusão realizado com sucesso")
 	@ApiResponse(responseCode = "404", description = "Recurso não encotrado", content = @Content(schema = @Schema(implementation = ApiRequestException.class), mediaType = MediaType.APPLICATION_JSON_VALUE))
 	@ApiResponse(responseCode = "403", description = "Não autorizado", content = @Content(schema = @Schema(defaultValue = "")))
