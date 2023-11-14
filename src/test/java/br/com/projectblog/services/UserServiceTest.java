@@ -24,7 +24,7 @@ import br.com.projectblog.exceptions.BusinessException;
 import br.com.projectblog.exceptions.ResourceNotFoundException;
 import br.com.projectblog.mappers.UserMapper;
 import br.com.projectblog.mappers.UserMapperImpl;
-import br.com.projectblog.respositories.UserRepository;
+import br.com.projectblog.repositories.UserRepository;
 import br.com.projectblog.utils.UserUtils;
 import br.com.projectblog.validations.groups.OnCreate;
 import br.com.projectblog.validations.groups.OnUpdate;
@@ -35,15 +35,10 @@ import jakarta.validation.Validator;
 class UserServiceTest {
 	
 	private static final String FIELD_USER_ID = "userId";
-
 	private static final String FIELD_ENABLED = "enabled";
-
 	private static final String FIELD_ROLE = "role";
-
 	private static final String FIELD_PASSWORD = "password";
-
 	private static final String FIELD_EMAIL = "email";
-
 	private static final String FIELD_USERNAME = "username";
 
 	private UserService service;
@@ -71,10 +66,9 @@ class UserServiceTest {
       mockedStatic.close();
     }
 
-    private void validarDadosDeEntradaPadrao(UserRequestDTO dto) {
+    private Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaPadrao(UserRequestDTO dto) {
     	Set<ConstraintViolation<UserRequestDTO>> violations = this.validator.validate(dto);
-    		
-        assertThat(violations.size()).isEqualTo(5); 
+    		 
         violations.forEach(action -> {
             if(action.getPropertyPath().toString().equals(FIELD_USERNAME)) { 
 	            assertThat(action.getMessageTemplate()).isEqualTo("O campo 'username' é obrigatório ser informado.");
@@ -96,43 +90,35 @@ class UserServiceTest {
 	            assertThat(action.getMessageTemplate()).isEqualTo("O campo 'enabled' é obrigatório ser informado.");
 	            assertThat(action.getPropertyPath().toString()).isEqualTo(FIELD_ENABLED);	            
         	} 
-        });   
+        });  
+        
+        return violations;
     }
     
     
-    private void validarDadosDeEntradaCriacao(UserRequestDTO dto) {
-    	dto.setUserId(UUID.randomUUID().toString());
-    	dto.setUsername("daniel");
-    	dto.setEmail("daniel@gmail.com");
-    	dto.setEnabled(true);
-    	dto.setPassword("12345678");
-    	dto.setRole(Role.ADMIN);
-    	
+    private Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaCriacao(UserRequestDTO dto) {
+
     	Set<ConstraintViolation<UserRequestDTO>> violations = validator.validate(dto, OnCreate.class);
-    	
-        assertThat(violations.size()).isEqualTo(1); 
+    	       
         violations.forEach(action -> { 
 	            assertThat(action.getMessageTemplate()).isEqualTo("O campo 'userId' não deve ser informado na inclusão.");
 	            assertThat(action.getPropertyPath().toString()).isEqualTo(FIELD_USER_ID);  
         });   
+        
+        return violations;
     }
        
     
-    private void validarDadosDeEntradaAtualizacao(UserRequestDTO dto) {
-    	dto.setUserId(null);
-    	dto.setUsername("daniel");
-    	dto.setEmail("daniel@gmail.com");
-    	dto.setEnabled(true);
-    	dto.setPassword("12345678");
-    	dto.setRole(Role.ADMIN);
-    	
+    private Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaAtualizacao(UserRequestDTO dto) {
+
     	Set<ConstraintViolation<UserRequestDTO>> violations = validator.validate(dto, OnUpdate.class);
-    	
-        assertThat(violations.size()).isEqualTo(1); 
+    	 
         violations.forEach(action -> {
             assertThat(action.getMessageTemplate()).isEqualTo("O campo 'userId' é obrigatório ser informado na atualização.");
             assertThat(action.getPropertyPath().toString()).isEqualTo(FIELD_USER_ID);  
-        });    
+        });
+        
+        return violations;
     }
     
     
@@ -142,9 +128,28 @@ class UserServiceTest {
 
     	UserRequestDTO dto = UserRequestDTO.builder().build();
         
-        this.validarDadosDeEntradaPadrao(dto);
-        this.validarDadosDeEntradaCriacao(dto);
-        this.validarDadosDeEntradaAtualizacao(dto);
+        Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaPadrao = this.validarDadosDeEntradaPadrao(dto);
+        assertThat(validarDadosDeEntradaPadrao.size()).isEqualTo(5);
+        
+    	dto.setUserId(UUID.randomUUID().toString());
+    	dto.setUsername("daniel");
+    	dto.setEmail("daniel@gmail.com");
+    	dto.setEnabled(true);
+    	dto.setPassword("12345678");
+    	dto.setRole(Role.ADMIN);
+    	
+        Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaCriacao = this.validarDadosDeEntradaCriacao(dto);
+        assertThat(validarDadosDeEntradaCriacao.size()).isEqualTo(1); 
+        
+    	dto.setUserId(null);
+    	dto.setUsername("daniel");
+    	dto.setEmail("daniel@gmail.com");
+    	dto.setEnabled(true);
+    	dto.setPassword("12345678");
+    	dto.setRole(Role.ADMIN);
+    
+    	Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaAtualizacao = this.validarDadosDeEntradaAtualizacao(dto);
+        assertThat(validarDadosDeEntradaAtualizacao.size()).isEqualTo(1); 
     }
     
     
@@ -161,12 +166,14 @@ class UserServiceTest {
 		    	 	.role(Role.ADMIN)
 		    	 	.build();
     	
+    	Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaAtualizacao = this.validarDadosDeEntradaAtualizacao(dto);	
     	when(this.repository.findById(UUID.fromString(dto.getUserId()))).thenReturn(Optional.empty());
 		    	
 		try {
 			this.service.update(dto);
 			
 		} catch (ResourceNotFoundException e) {
+			assertThat(validarDadosDeEntradaAtualizacao.size()).isEqualTo(0); 
 			assertEquals(String.format("Usuário pelo identificador %s não encontrado para ser atualizado.", dto.getUserId()), e.getLocalizedMessage());
 		}
     }
@@ -185,7 +192,7 @@ class UserServiceTest {
 		    	 	.role(Role.USER)
 		    	 	.build();
     	
-    	
+    	Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaAtualizacao = this.validarDadosDeEntradaAtualizacao(dto);	
     	mockedStatic.when(UserUtils::getUsernameLogado).thenReturn("marcos");
     	
 		when(this.repository.findById(UUID.fromString(dto.getUserId())))
@@ -195,6 +202,7 @@ class UserServiceTest {
 			this.service.update(dto);
 			
 		} catch (BusinessException e) {
+			assertThat(validarDadosDeEntradaAtualizacao.size()).isEqualTo(0); 
 			assertEquals("Não é possível alterar informações de outro usuário que não seja o seu, a menos que seja o administrador.", e.getLocalizedMessage());
 		}
     }
@@ -204,6 +212,7 @@ class UserServiceTest {
     @DisplayName("Teste - tentar atualizar email ou username que outro usuário já utiliza.")
     void testeAtualizandoUsuarioComUsernameOuEmailJaCadastrado() {
     	UserRequestDTO newUserDto = UserRequestDTO.builder()
+    			.userId(UUID.randomUUID().toString())	
         	 	.username("daniel")
         	 	.email("test.alfa@gmail.com")
         	 	.enabled(true)
@@ -219,6 +228,8 @@ class UserServiceTest {
         	 	.role(Role.ADMIN)
         	 	.build();
     	
+    	Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaAtualizacao = this.validarDadosDeEntradaAtualizacao(newUserDto);	
+    	
     	mockedStatic.when(UserUtils::getUsernameLogado).thenReturn(actualUserDto.getUsername());
 		when(this.repository.findById(any())).thenReturn(Optional.of(this.mapper.userRequestDTOtoUser(actualUserDto)));
 		when(this.repository.findByUsernameOrEmail(newUserDto.getUsername(), newUserDto.getEmail()))
@@ -228,6 +239,7 @@ class UserServiceTest {
 			this.service.update(newUserDto);
 
 		} catch (BusinessException e) {
+			assertThat(validarDadosDeEntradaAtualizacao.size()).isEqualTo(0); 
 			assertEquals("'email' ou 'username' já estão sendo usado por outro usuário!", e.getLocalizedMessage());
 		}
 	}
@@ -243,6 +255,8 @@ class UserServiceTest {
         	 	.password("asdasdasda")
         	 	.role(Role.ADMIN)
         	 	.build();
+    	
+        Set<ConstraintViolation<UserRequestDTO>> validarDadosDeEntradaCriacao = this.validarDadosDeEntradaCriacao(newUserDto);
 
 		when(this.repository.findByUsernameOrEmail(newUserDto.getUsername(), newUserDto.getEmail()))
 				.thenReturn(Optional.ofNullable(this.mapper.userRequestDTOtoUser(newUserDto)));
@@ -251,6 +265,7 @@ class UserServiceTest {
 			this.service.insert(newUserDto);
 
 		} catch (BusinessException e) {
+			assertThat(validarDadosDeEntradaCriacao.size()).isEqualTo(0);
 			assertEquals("'email' ou 'username' já estão sendo usado por outro usuário!", e.getLocalizedMessage());
 		}
 	}
