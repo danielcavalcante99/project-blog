@@ -54,8 +54,9 @@ public class PostService {
 	}
 	
 	public Optional<PostDTO> findById(@NotNull UUID id) {
-		Optional<Post> optPost = this.repository.findById(id);
-		PostDTO postDTO = this.mapper.postToPostDTO(optPost.orElse(null));	
+		Post post = this.repository.findById(id).orElse(null);
+		PostDTO postDTO = this.mapper.postToPostDTO(post);
+		postDTO.setCommentsDTO(this.commentMapper.listCommentToListCommentDTO(post.getComments()));
 		
 		return Optional.ofNullable(postDTO);
 	}
