@@ -70,8 +70,6 @@ public class SecurityConfig {
                         .requestMatchers("/configuration/security").permitAll()
                         .requestMatchers("/webjars/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/users/register").permitAll()
-                        .requestMatchers(HttpMethod.PUT, "/v1/users/update").hasAnyRole(ADMIN.name())
-                        .requestMatchers(HttpMethod.GET, "/v1/users/**").hasRole(ADMIN.name())
                         .anyRequest().hasAnyRole(ADMIN.name(), MANAGER.name(), USER.name()))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
