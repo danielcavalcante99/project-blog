@@ -2,6 +2,7 @@ package br.com.projectblog.repositories.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -45,11 +46,11 @@ public class PostRepositoryCustomImpl implements PostRepositoryCustom {
 		}
 
 		if (filter.getUserId() != null) {
-			predicates.add(cb.equal(root.get("user").get("userId"), filter.getUserId()));
+			predicates.add(cb.equal(root.get("user").get("userId"), UUID.fromString(filter.getUserId())));
 		}
 		
 		if (filter.getPostId() != null) {
-			predicates.add(cb.equal(root.get("postId"), filter.getPostId()));
+			predicates.add(cb.equal(root.get("postId"), UUID.fromString(filter.getPostId())));
 		}
 
 		if (filter.getTitle() != null) {
