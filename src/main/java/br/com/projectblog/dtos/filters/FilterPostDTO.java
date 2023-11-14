@@ -2,7 +2,6 @@ package br.com.projectblog.dtos.filters;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -15,9 +14,9 @@ public class FilterPostDTO implements Serializable{
 
 	private static final long serialVersionUID = -866392521178817403L;
 	
-	private UUID postId;
+	private String postId;
 
-	private UUID userId;
+	private String userId;
 	
 	private String title;
 	
